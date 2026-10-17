@@ -1,0 +1,6 @@
+.env
+.playwright-mcp/
+node_modules/
+TALK.md
+.mcp.json
+.vscode

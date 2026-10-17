@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" font-family="system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-labelledby="t d">
+  <title id="t">A data provider gives its customers access with API keys</title>
+  <desc id="d">GeoDataProvider hosts data layers on ArcGIS Location Platform. Each customer app gets API keys scoped to some layers. With dozens of keys, the provider needs to know what expires, what each key exposes and which customer it belongs to.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <!-- own background, readable on light and dark pages -->
+  <rect width="1200" height="760" rx="24" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+
+  <!-- provider -->
+  <text x="60" y="70" font-size="18" font-weight="700" fill="#0f172a">GeoDataProvider GmbH</text>
+  <text x="60" y="94" font-size="14" fill="#475569">Hosts its data on ArcGIS Location Platform</text>
+  <rect x="60" y="120" width="300" height="400" rx="16" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+  <g font-size="15" fill="#0f172a">
+    <rect x="84" y="148" width="252" height="64" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/>
+    <text x="104" y="176" font-weight="600">Land use</text>
+    <text x="104" y="198" font-size="13" fill="#0369a1">Open data</text>
+    <rect x="84" y="228" width="252" height="64" rx="10" fill="#e0e7ff" stroke="#a5b4fc"/>
+    <text x="104" y="256" font-weight="600">Mobility network</text>
+    <text x="104" y="278" font-size="13" fill="#4338ca">Premium data</text>
+    <rect x="84" y="308" width="252" height="64" rx="10" fill="#fee2e2" stroke="#fca5a5"/>
+    <text x="104" y="336" font-weight="600">Building footprints</text>
+    <text x="104" y="358" font-size="13" fill="#b91c1c">Restricted data</text>
+    <rect x="84" y="388" width="252" height="64" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="104" y="416" font-weight="600">Drone imagery</text>
+    <text x="104" y="438" font-size="13" fill="#475569">…and more layers</text>
+  </g>
+  <text x="210" y="494" font-size="13" fill="#64748b" text-anchor="middle">Data items</text>
+
+  <!-- keys -->
+  <text x="450" y="70" font-size="18" font-weight="700" fill="#0f172a">API keys</text>
+  <text x="450" y="94" font-size="14" fill="#475569">Each one scoped to some layers</text>
+  <g font-size="14" fill="#0f172a">
+    <rect x="450" y="140" width="300" height="76" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="470" y="168" font-weight="600">🔑 Land-use viewer (prod)</text>
+    <text x="470" y="192" font-size="13" fill="#475569">Land use · expires in 199 days</text>
+    <rect x="450" y="236" width="300" height="76" rx="12" fill="#ffffff" stroke="#f59e0b" stroke-width="2"/>
+    <text x="470" y="264" font-weight="600">🔑 Field inspections app</text>
+    <text x="470" y="288" font-size="13" fill="#b45309">Restricted data · expires in 2 days</text>
+    <rect x="450" y="332" width="300" height="76" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="470" y="360" font-weight="600">🔑 Property portal</text>
+    <text x="470" y="384" font-size="13" fill="#475569">Mobility · Buildings · no referrers</text>
+    <rect x="450" y="428" width="300" height="76" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="470" y="456" font-weight="600">🔑 Mobility data trial</text>
+    <text x="470" y="480" font-size="13" fill="#475569">Mobility · trial, 14 days</text>
+  </g>
+  <text x="600" y="530" font-size="13" fill="#64748b" text-anchor="middle">…dozens more</text>
+
+  <!-- customers -->
+  <text x="850" y="70" font-size="18" font-weight="700" fill="#0f172a">Customers</text>
+  <text x="850" y="94" font-size="14" fill="#475569">Their apps use the keys</text>
+  <g font-size="15" fill="#0f172a">
+    <rect x="850" y="140" width="290" height="124" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="870" y="172" font-weight="600">🏛 Mainhausen city</text>
+    <text x="870" y="198" font-size="13" fill="#475569">Planning portal</text>
+    <text x="870" y="220" font-size="13" fill="#475569">Inspectors' tablet app</text>
+    <rect x="850" y="284" width="290" height="124" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="870" y="316" font-weight="600">🏢 RheinMain PropTech</text>
+    <text x="870" y="342" font-size="13" fill="#475569">Property portal</text>
+    <text x="870" y="364" font-size="13" fill="#475569">(production and staging)</text>
+    <rect x="850" y="428" width="290" height="76" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="870" y="458" font-weight="600">🛴 Velora Micromobility</text>
+    <text x="870" y="482" font-size="13" fill="#475569">Trial customer</text>
+  </g>
+
+  <!-- arrows -->
+  <g stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrow)">
+    <path d="M360 180 C 400 180, 410 178, 446 178"/>
+    <path d="M360 340 C 400 340, 410 274, 446 274"/>
+    <path d="M360 260 C 400 260, 410 370, 446 370"/>
+    <path d="M360 270 C 400 280, 410 466, 446 466"/>
+    <path d="M750 178 C 800 178, 800 190, 846 190"/>
+    <path d="M750 274 C 800 274, 800 215, 846 215"/>
+    <path d="M750 370 C 800 370, 800 340, 846 340"/>
+    <path d="M750 466 C 800 466, 800 466, 846 466"/>
+  </g>
+
+  <!-- questions -->
+  <rect x="60" y="580" width="1080" height="140" rx="16" fill="#fff7ed" stroke="#fdba74" stroke-width="2"/>
+  <text x="90" y="616" font-size="17" font-weight="700" fill="#9a3412">With dozens of keys, the everyday questions cross many credentials:</text>
+  <g font-size="15" fill="#431407">
+    <text x="90" y="650">• Which keys expire this month, and who do I call?</text>
+    <text x="90" y="680">• Which keys belong to which customer?</text>
+    <text x="90" y="710">• How do I rotate a key without downtime?</text>
+    <text x="620" y="650">• What data does each key expose?</text>
+    <text x="620" y="680">• Does any key expose restricted data without referrers?</text>
+    <text x="620" y="710">• Which keys have admin privileges?</text>
+  </g>
+</svg>

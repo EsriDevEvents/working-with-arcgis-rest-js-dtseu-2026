@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Credential Console · basics</title>
+    <!-- Calcite components for the UI -->
+    <link rel="stylesheet" href="https://js.arcgis.com/calcite-components/5.1.2/main.css" />
+    <script type="module" src="https://js.arcgis.com/calcite-components/5.1.2/index.js"></script>
+    <!-- #region libs -->
+    <!-- ArcGIS REST JS: only the packages this app uses -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@esri/arcgis-rest-request": "https://cdn.jsdelivr.net/npm/@esri/arcgis-rest-request@4.11.0/+esm",
+          "@esri/arcgis-rest-portal": "https://cdn.jsdelivr.net/npm/@esri/arcgis-rest-portal@4.11.0/+esm"
+        }
+      }
+    </script>
+    <!-- #endregion libs -->
+    <link rel="stylesheet" href="./style.css" />
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body class="calcite-mode-auto">
+    <!-- #region ui -->
+    <calcite-shell>
+      <calcite-navigation slot="header">
+        <calcite-navigation-logo slot="logo" icon="key" heading="Credential Console" description="ArcGIS REST JS basics"></calcite-navigation-logo>
+        <calcite-button slot="content-end" id="sign-in" icon-start="sign-in">Sign in with ArcGIS</calcite-button>
+        <calcite-button slot="content-end" id="sign-out" icon-start="sign-out" appearance="transparent" hidden>Sign out</calcite-button>
+        <calcite-navigation-user slot="user" id="user" hidden></calcite-navigation-user>
+      </calcite-navigation>
+
+      <!-- Projects = ArcGIS groups -->
+      <calcite-shell-panel slot="panel-start">
+        <calcite-panel heading="Projects" description="Your ArcGIS groups">
+          <calcite-list id="projects" label="Projects" selection-mode="single" selection-appearance="highlight"></calcite-list>
+          <calcite-button slot="footer" id="new-project" icon-start="plus" appearance="outline" width="full" disabled>New project</calcite-button>
+        </calcite-panel>
+      </calcite-shell-panel>
+
+      <!-- Items of the selected project -->
+      <calcite-panel id="items-panel" heading="Items" description="Content shared with the project">
+        <calcite-button slot="header-actions-end" id="new-item" icon-start="plus" disabled>New item</calcite-button>
+        <calcite-list id="items" label="Items"></calcite-list>
+        <p id="status" class="status">Sign in to see your projects and items.</p>
+      </calcite-panel>
+    </calcite-shell>
+    <!-- #endregion ui -->
+  </body>
+</html>

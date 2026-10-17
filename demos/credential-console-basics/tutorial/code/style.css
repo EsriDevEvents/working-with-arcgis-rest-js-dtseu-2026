@@ -1,0 +1,23 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--calcite-color-background);
+  color: var(--calcite-color-text-1);
+  font-family: var(--calcite-font-family);
+}
+
+.status {
+  margin: 24px 16px;
+  text-align: center;
+  color: var(--calcite-color-text-3);
+}
+
+
+/* Calcite components set their own display, which overrides the hidden attribute */
+[hidden] {
+  display: none !important;
+}

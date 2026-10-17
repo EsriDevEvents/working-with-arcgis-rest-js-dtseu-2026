@@ -1,0 +1,14 @@
+{
+  "name": "credential-console-basics",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "interactive-code-scroll dev",
+    "build": "interactive-code-scroll build",
+    "serve": "interactive-code-scroll serve"
+  },
+  "devDependencies": {
+    "astro": "^7.3.5",
+    "interactive-code-scroll": "0.2.0-beta.10"
+  }
+}

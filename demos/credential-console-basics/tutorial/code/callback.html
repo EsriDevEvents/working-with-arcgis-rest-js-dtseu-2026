@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Signing in…</title>
+    <script type="importmap">
+      { "imports": { "@esri/arcgis-rest-request": "https://cdn.jsdelivr.net/npm/@esri/arcgis-rest-request@4.11.0/+esm" } }
+    </script>
+  </head>
+  <body>
+    <p>Signing in…</p>
+    <script type="module">
+      // #region callback
+      import { ArcGISIdentityManager } from "@esri/arcgis-rest-request";
+      import { oauthOptions } from "./config.js";
+
+      // Same options as beginOAuth2. Hands the result back to the window
+      // that opened this popup and closes the popup.
+      ArcGISIdentityManager.completeOAuth2(oauthOptions);
+      // #endregion callback
+    </script>
+  </body>
+</html>
