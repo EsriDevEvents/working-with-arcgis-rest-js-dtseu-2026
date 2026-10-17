@@ -13,7 +13,8 @@
       {
         "imports": {
           "@esri/arcgis-rest-request": "https://cdn.jsdelivr.net/npm/@esri/arcgis-rest-request@4.11.0/+esm",
-          "@esri/arcgis-rest-portal": "https://cdn.jsdelivr.net/npm/@esri/arcgis-rest-portal@4.11.0/+esm"
+          "@esri/arcgis-rest-portal": "https://cdn.jsdelivr.net/npm/@esri/arcgis-rest-portal@4.11.0/+esm",
+          "@esri/arcgis-rest-developer-credentials": "https://cdn.jsdelivr.net/npm/@esri/arcgis-rest-developer-credentials@4.11.0/+esm"
         }
       }
     </script>
@@ -39,11 +40,11 @@
         </calcite-panel>
       </calcite-shell-panel>
 
-      <!-- Items of the selected project -->
-      <calcite-panel id="items-panel" heading="Items" description="Content shared with the project">
-        <calcite-button slot="header-actions-end" id="new-item" icon-start="plus" disabled>New item</calcite-button>
-        <calcite-list id="items" label="Items"></calcite-list>
-        <p id="status" class="status">Sign in to see your projects and items.</p>
+      <!-- API keys (items) of the selected project -->
+      <calcite-panel id="items-panel" heading="API keys" description="Shared with the project">
+        <calcite-button slot="header-actions-end" id="new-item" icon-start="plus" disabled>New API key</calcite-button>
+        <calcite-list id="items" label="API keys"></calcite-list>
+        <p id="status" class="status">Sign in to see your projects and API keys.</p>
       </calcite-panel>
     </calcite-shell>
     <!-- #endregion ui -->
