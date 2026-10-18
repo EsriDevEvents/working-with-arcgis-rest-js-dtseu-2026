@@ -12,8 +12,8 @@ importers:
         specifier: ^7.3.5
         version: 7.4.0(yaml@2.9.1)
       interactive-code-scroll:
-        specifier: 0.2.0-beta.10
-        version: 0.2.0-beta.10(astro@7.4.0(yaml@2.9.1))
+        specifier: 0.2.0-beta.11
+        version: 0.2.0-beta.11(astro@7.4.0(yaml@2.9.1))
 
 packages:
 
@@ -831,8 +831,8 @@ packages:
     resolution: {integrity: sha512-/8UvqAPU9DGTI9k4mxtf49U37Isfwr8Uts96+SBHIkFxPJnHS0Ew4f00sM4Scd8V8EjM0jUNtVDdv1kPdt35lg==}
     engines: {node: '>= 4'}
 
-  interactive-code-scroll@0.2.0-beta.10:
-    resolution: {integrity: sha512-GjHg7V025YEIS2moVYo8AIJldfwAmJ004/9pdhERSbIKI0UpHN5yPkSt5S/kQ7a5IkfvfBdH2V7yKd4nYDDwFg==}
+  interactive-code-scroll@0.2.0-beta.11:
+    resolution: {integrity: sha512-1jO9PC9a+7HBaHGRqlpx2DRNW77OraBCuB9oGofkDipjCsqQ8J7c0gSJ35EU9cEbZVoCx+a3B64RuBnvgDPYKw==}
     hasBin: true
     peerDependencies:
       astro: ^7.3.5
@@ -2140,7 +2140,7 @@ snapshots:
 
   ignore@7.0.12: {}
 
-  interactive-code-scroll@0.2.0-beta.10(astro@7.4.0(yaml@2.9.1)):
+  interactive-code-scroll@0.2.0-beta.11(astro@7.4.0(yaml@2.9.1)):
     dependencies:
       '@astrojs/markdown-satteri': 0.4.4
       '@astrojs/mdx': 8.1.0(@astrojs/markdown-satteri@0.4.4)(astro@7.4.0(yaml@2.9.1))
