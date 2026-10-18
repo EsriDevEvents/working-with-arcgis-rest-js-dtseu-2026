@@ -9,7 +9,8 @@ console: true
 level: Intermediate
 duration: 30-40 min
 updated: 2026-10-18
-exclude: ["style.css"]
+feedbackUrl: https://github.com/EsriDevEvents/working-with-arcgis-rest-js-dtseu-2026/issues
+presentationUrl: https://github.com/EsriDevEvents/working-with-arcgis-rest-js-dtseu-2026/tree/main/demos/credential-console-basics
 ---
 
 <Intro images={["need.svg"]} collapsed>
@@ -147,6 +148,22 @@ When the user clicks the sign-in button, the app opens a popup where they sign i
 - The session is what every REST JS call receives as `authentication`.
 - `serialize()` saves the session to <Hint id="storage" label="sessionStorage">It holds the token and the refresh token. Any script on the page can read browser storage, so one XSS steals the session. `sessionStorage` at least clears it when the tab closes; avoid `localStorage`.</Hint>, so a reload keeps you signed in.
 
+Try it in the Preview: press **Sign in with ArcGIS**, then **Cancel**. REST JS throws an `ArcGISAccessDeniedError`, and the app checks `error.name` against [`ErrorTypes`](https://developers.arcgis.com/arcgis-rest-js/api-reference/arcgis-rest-request/ErrorTypes/).
+
+<details>
+<summary>Which errors can REST JS throw?</summary>
+
+- `ArcGISRequestError`: the base error. It carries the REST API `code`, the `url` and the raw `response`.
+- `ArcGISAuthError`: invalid or expired token (codes 498/499). `retry()` sends the request again with a new session.
+- `ArcGISTokenRequestError`: getting or refreshing a token failed.
+- `ArcGISAccessDeniedError`: the user cancelled sign-in.
+
+Compare `error.name` with `ErrorTypes`, as in [Error handling](https://developers.arcgis.com/arcgis-rest-js/error-handling/).
+
+> **Note**: never log the whole error. Its `options` can hold credentials, like the password of a username/password session. Log `error.message` instead.
+
+</details>
+
 </Step>
 
 <Step id="config" file="config.js" region="config" view="console" panelHeight={35}>
@@ -155,7 +172,7 @@ When the user clicks the sign-in button, the app opens a popup where they sign i
 
 The portal must also know your app: create a developer credential ([**OAuth 2.0 credentials > For user authentication**](https://www.rauljimenez.info/arcgis-tutorials/arcgis-js-sdk-user-auth/#register-app)) with the right redirect URL and paste the **Client ID** here.
 
-<VarField name="clientId" label="Client ID" secret persist />
+<VarField name="clientId" label="Client ID" persist />
 
 - `portal`: where users sign in. The default works for ArcGIS Location Platform and ArcGIS Online; for ArcGIS Enterprise, use your portal's REST endpoint: `https://<host>/<webadaptor>/sharing/rest`.
 - `redirectUri`: the page the portal sends the popup back to. Register this exact URL in the credential.
@@ -205,13 +222,45 @@ Some functions add to the REST API response:
 
 </Step>
 
-<Step id="search-groups" file="main.js" region="search-groups" view="console" panelHeight={35}>
+<Step id="search-groups" file="main.js" region="search-groups" collapsed>
 
 ## Search groups
 
-In the app, a **project** is a group tagged `project`. [`SearchQueryBuilder`](https://developers.arcgis.com/arcgis-rest-js/api-reference/arcgis-rest-portal/SearchQueryBuilder/) builds the query in readable code: `tags:project AND owner:<you>`.
+In the app, a **project** is a group tagged `project`. [`SearchQueryBuilder`](https://developers.arcgis.com/arcgis-rest-js/api-reference/arcgis-rest-portal/SearchQueryBuilder/) builds the query from code: `tags:project AND owner:<you>`.
 
 [`searchGroups()`](https://developers.arcgis.com/arcgis-rest-js/api-reference/arcgis-rest-portal/searchGroups/) returns the matches, and the Projects column lists them.
+
+<details>
+<summary>Why not write the query string by hand?</summary>
+
+For a fixed query like this one, a string works. The builder pays off when:
+
+- **Values have spaces**: `match("my project")` becomes `tags:"my project"`. By hand, `tags:my project` only matches `my`.
+- **Filters are optional**: add each one inside an `if` instead of joining strings.
+- **Dates**: `.from(date).to(date)` turns `Date` objects into a `[start TO end]` range.
+
+```js
+const q = new SearchQueryBuilder().match(session.username).in("owner");
+if (tag) q.and().match(tag).in("tags");
+if (since) q.and().from(since).to(new Date()).in("modified");
+// owner:<you> AND tags:"my project" AND modified:[1767222000000 TO 1780264800000]
+```
+
+- **Groups and operators**: `startGroup()`/`endGroup()` add parentheses, and `or()` and `not()` work like `and()`. `not()` replaces `and()`: `.and().not()` logs a warning and drops the `NOT`.
+
+```js
+new SearchQueryBuilder()
+  .match(session.username).in("owner")
+  .and().startGroup()
+    .match("project").in("tags").or().match("demo").in("tags")
+  .endGroup()
+  .not().match("archived").in("tags");
+// owner:<you> AND (tags:project OR tags:demo) NOT tags:archived
+```
+
+- **Reuse**: `clone()` copies a base query, so you can add filters to the copy without changing the original.
+
+</details>
 
 </Step>
 
@@ -253,6 +302,43 @@ Credentials are items, so they are found like any other item: [`searchItems()`](
 - API keys also carry the `APIToken` [<Hint id="typekeyword" label="type keyword">Type keywords describe the type and should logically apply to all items of that type.</Hint>](https://developers.arcgis.com/rest/users-groups-and-items/common-parameters/). OAuth credentials, like the one you sign in with, don't.
 
 > **Note**: `searchItems()` also finds any content you own: maps, layers, documents, etc.
+
+<details>
+<summary>What if an option is missing?</summary>
+
+The REST API sometimes supports a parameter that the function doesn't declare. Pass it in `params`: every REST JS function sends it as is.
+
+```js
+const response = await searchItems({
+  q,
+  authentication: session,
+  params: { bbox: "-10,35,5,44" }, // supported by the REST API, not declared by searchItems()
+});
+```
+
+Don't pass it at the top level: `searchItems({ q, bbox: "..." })` drops `bbox` without an error.
+
+If REST JS has no function for an endpoint, call [`request()`](https://developers.arcgis.com/arcgis-rest-js/api-reference/arcgis-rest-request/request/) directly. It still adds the token and `f=json`, and throws on errors.
+
+</details>
+
+<details>
+<summary>More than 100 API keys?</summary>
+
+`num` returns 100 results at most. When there are more, the response includes `nextPage()`: it repeats the search from where the last page ended.
+
+```js
+let response = await searchItems({ q, num: 100, authentication: session });
+const results = [...response.results];
+while (response.nextPage) {
+  response = await response.nextPage();
+  results.push(...response.results);
+}
+```
+
+`nextPage()` reuses the same options (`q`, `num`, `authentication`), so every page sees the same items. `searchGroups()` works the same way.
+
+</details>
 
 </Step>
 
@@ -358,3 +444,11 @@ The full app adds audits, usage and more on top of the same calls.
 [Source code of the full app](https://github.com/hhkaos/arcgis-credential-console)
 
 </Step>
+
+<Outro>
+
+Feel free to use [this repo issues](https://github.com/EsriDevEvents/working-with-arcgis-rest-js-dtseu-2026/issues) anytime for questions about this demo/tutorial.
+
+For general questions: [ArcGIS REST JS forum at Esri Community](https://community.esri.com/en/categories/arcgis-rest-js).
+
+</Outro> 

@@ -11,7 +11,7 @@ export const oauthOptions = {
   redirectUri,
   
   // Set if you need to authenticate against ArcGIS Enterprise
-  // portal: "", // Defaults to: https://www.arcgis.com/sharing/rest
+  // portal: "https://<host>/<webadaptor>/sharing/rest", // Defaults to: https://www.arcgis.com/sharing/rest
   
   // Sign in in a popup , so the app stays on screen
   // popup: true

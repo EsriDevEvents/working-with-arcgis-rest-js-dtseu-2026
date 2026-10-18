@@ -4,3 +4,5 @@ node_modules/
 TALK.md
 .mcp.json
 .vscode
+# Local backups of demo code
+*.backup.js

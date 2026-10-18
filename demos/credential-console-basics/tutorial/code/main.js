@@ -1,8 +1,8 @@
 // #region imports
-// Sign-in: the session it returns authenticates every other call
-import { ArcGISIdentityManager } from "@esri/arcgis-rest-request";
+// Sign-in: returns the session used by every call
+// ErrorTypes: names of the errors REST JS throws
+import { ArcGISIdentityManager, ErrorTypes } from "@esri/arcgis-rest-request";
 import {
-  // The signed-in user and their organization
   getSelf,
   // Projects are groups
   searchGroups,
@@ -11,26 +11,26 @@ import {
   removeGroup,
   // Credentials are items
   searchItems,
-  getGroupContent, // items shared with a group
+  getGroupContent,
   updateItem,
   removeItem,
   shareItemWithGroup,
-  // Builds search queries in readable code: tags:project AND owner:<you>
   SearchQueryBuilder,
 } from "@esri/arcgis-rest-portal";
 // API keys: the item plus its privileges, referrers and two key slots
-import { createApiKey, getApiKey, updateApiKey, invalidateApiKey } from "@esri/arcgis-rest-developer-credentials";
-// Sign-in options (client ID, redirect URL)
+import {
+  createApiKey,
+  getApiKey,
+  updateApiKey, 
+  invalidateApiKey,
+} from "@esri/arcgis-rest-developer-credentials";
 import { oauthOptions } from "./config.js";
 // #endregion imports
 
 // #region sign-in
-// The signed-in session. Every REST JS call receives it as `authentication`.
 let session;
-// Kept in sessionStorage: survives a reload, cleared when the tab closes.
-// Any script on the page can read it (XSS): in production keep tokens server-side (HttpOnly cookie)
+// XSS can read it: keep tokens server-side in production
 const SESSION_KEY = "credential-console-basics-session";
-// Shortcut for document.querySelector
 const $ = (selector) => document.querySelector(selector);
 
 $("#sign-in").addEventListener("click", async () => {
@@ -38,9 +38,13 @@ $("#sign-in").addEventListener("click", async () => {
     // Opens the ArcGIS sign-in page in a popup (OAuth 2.0 with PKCE, no backend needed)
     session = await ArcGISIdentityManager.beginOAuth2(oauthOptions);
     sessionStorage.setItem(SESSION_KEY, session.serialize());
-    // Next step: get the user and show it
     showSignedIn();
   } catch (error) {
+    // The user clicked Cancel on the ArcGIS sign-in page
+    if (error.name === ErrorTypes.ArcGISAccessDeniedError) {
+      $("#status").textContent = "Sign-in cancelled.";
+      return;
+    }
     $("#status").textContent = `Sign-in failed: ${error.message}`;
   }
 });
@@ -50,18 +54,14 @@ $("#sign-in").addEventListener("click", async () => {
 async function showSignedIn() {
   // The signed-in user and the organization, in one request
   const self = await getSelf({ authentication: session });
-  // Every call returns the plain JSON of the REST API
   console.log("getSelf()", self);
-  const { username, fullName } = self.user;
   // The organization's own URL, e.g. https://<urlKey>.maps.arcgis.com
   portalHome = `https://${self.urlKey}.${self.customBaseUrl}`;
-  // Swap "Sign in" for the user
   $("#sign-in").hidden = true;
   $("#sign-out").hidden = false;
-  // Set the <calcite-navigation-user> Calcite component
+  const { username, fullName } = self.user;
   Object.assign($("#user"), { hidden: false, fullName, username });
   $("#new-project").disabled = false;
-  // Next step: search the user's projects
   loadProjects();
 }
 // #endregion get-self
@@ -71,26 +71,27 @@ async function showSignedIn() {
 const projectTag = "project";
 // Not a group: a first entry in the Projects column that lists every item you own
 const ALL = { id: "all", title: "All API keys" };
-// The user's projects (groups), as last returned by ArcGIS
 let projects = [];
 
 async function loadProjects() {
-  // Readable query: tags:project AND owner:<you>
-  const q = new SearchQueryBuilder().match(projectTag).in("tags").and().match(session.username).in("owner");
-  console.log("query (q) used next in searchGroups", q);
-  const response = await searchGroups({ q, num: 100, authentication: session });
-  console.log("response", response);
-  
+  // Build the query from code: tags:project AND owner:<you>
+  const q = new SearchQueryBuilder()
+    .match(projectTag).in("tags")
+    .and().match(session.username).in("owner");
+  console.log("query", q.toParam());
+  const response = await searchGroups({
+    q, // Required
+    num: 100,
+    authentication: session,
+  });
+  console.log("searchGroups()", response);
   projects = response.results;
-   
-  selectProject(ALL.id); // It is the function that loads the items
-  renderProjects(); // Print the list (see "Search credentials")
+  selectProject(ALL.id);
+  renderProjects();
 }
 // #endregion search-groups
 
-// Fills the Projects column: one entry per group, with Rename and Delete actions.
-// renameProject and deleteProject come in the next steps; render and listItem are
-// Calcite list helpers at the end of the file.
+// Fills the Projects column: one entry per group, with Rename and Delete actions
 function renderProjects() {
   render($("#projects"), projects, (p) => p.snippet ?? "", [
     ["launch", "Open in ArcGIS", openPortalPage("group")],
@@ -105,12 +106,15 @@ $("#new-project").addEventListener("click", async () => {
   const title = prompt("Project name");
   if (!title) return;
   const { group } = await createGroup({
-    group: { title, tags: [projectTag], access: "private" },
+    group: {
+      title, // Required
+      access: "private", // Required
+      tags: [projectTag],
+    },
     authentication: session,
   });
   // Search takes a few seconds to see new groups: add it to the list ourselves
   projects.push(group);
-  // Select it and load its items (none yet)
   selectProject(group.id);
   renderProjects();
 });
@@ -120,15 +124,19 @@ $("#new-project").addEventListener("click", async () => {
 async function renameProject(project) {
   const title = prompt("New project name", project.title);
   if (!title) return;
-  // Only send the fields that change
-  await updateGroup({ group: { id: project.id, title }, authentication: session });
+  await updateGroup({
+    group: {
+      id: project.id, // Required
+      title,
+    },
+    authentication: session,
+  });
   project.title = title;
   renderProjects();
 }
 // #endregion update-group
 
-
-// The items of the selected project (ArcGIS response from last query)
+// The items of the selected project
 let items = [];
 
 // Runs each time a project is selected in the list
@@ -139,20 +147,24 @@ async function loadItems(project) {
 
 // #region search-credentials
 async function searchMyApiKeys() {
-  // Readable query: owner:<you> AND type:Application AND typekeywords:APIToken
-  // Search takes a few seconds to see changes.
+  // Search takes a few seconds to see changes
   const q = new SearchQueryBuilder()
     .match(session.username).in("owner")
     .and().match("Application").in("type") // every developer credential
     .and().match("APIToken").in("typekeywords"); // only API keys, not OAuth credentials
-  const response = await searchItems({ q, num: 100, sortField: "modified", sortOrder: "desc", authentication: session });
-  console.log("searchMyApiKeys response: ", response);
+  const response = await searchItems({
+    q, // Required
+    num: 100,
+    sortField: "modified",
+    sortOrder: "desc",
+    authentication: session,
+  });
+  console.log("searchItems()", response);
   return response.results;
 }
 // #endregion search-credentials
 
 async function loadGroupItems(project) {
-  // Items shared with the group
   const response = await getGroupContent(project.id, { authentication: session });
   return response.items;
 }
@@ -173,10 +185,12 @@ function renderItems() {
 
 // #region get-api-key
 async function showApiKeyInfo(item) {
-  // The credential (privileges, referrers, which slots are active…) and its item, in one call.
-  // It never includes the keys themselves, so it is safe to log.
-  const apiKey = await getApiKey({ itemId: item.id, authentication: session });
-  console.log(`getApiKey() "${item.title}"`, apiKey);
+  // Credential + item in one call. Never includes the keys: safe to log
+  const apiKey = await getApiKey({
+    itemId: item.id, // Required
+    authentication: session,
+  });
+  console.log(`getApiKey()`, apiKey);
   // Expiration dates are item fields (milliseconds). Only active slots hold a key that expires.
   item.expires = [1, 2]
     .filter((slot) => apiKey[`apiToken${slot}Active`])
@@ -197,9 +211,9 @@ $("#new-item").addEventListener("click", async () => {
   if (!title) return;
   // Creates the item, registers it as a credential and generates the key in slot 1
   const apiKey = await createApiKey({
-    title,
+    title, // Required
+    privileges, // Required
     tags: ["credential-console-basics"],
-    privileges,
     generateToken1: true,
     apiToken1ExpirationDate: in30Days(),
     authentication: session,
@@ -207,10 +221,13 @@ $("#new-item").addEventListener("click", async () => {
   // The only time the key can be read: the app doesn't keep it
   prompt("Copy the API key now. It won't be shown again.", apiKey.accessToken1);
   // #region share-api-key
-  // `selected` is the project selected in the list ("All API keys" is not a group)
-  if (selected !== ALL) {
+  if (selectedProject !== ALL) {
     // Share it with the selected project: that's how keys are organized by customer
-    await shareItemWithGroup({ id: apiKey.itemId, groupId: selected.id, authentication: session });
+    await shareItemWithGroup({
+      id: apiKey.itemId, // Required
+      groupId: selectedProject.id, // Required
+      authentication: session,
+    });
   }
   // #endregion share-api-key
   items.push(apiKey.item);
@@ -222,9 +239,14 @@ $("#new-item").addEventListener("click", async () => {
 async function renameItem(item) {
   const title = prompt("New API key title", item.title);
   if (!title) return;
-  // Title, tags and summary are item fields: changing them doesn't touch the keys.
-  // Only send the fields that change.
-  await updateItem({ item: { id: item.id, title }, authentication: session });
+  // Item fields: don't touch the keys
+  await updateItem({
+    item: {
+      id: item.id, // Required
+      title,
+    },
+    authentication: session,
+  });
   item.title = title;
   renderItems();
 }
@@ -232,12 +254,14 @@ async function renameItem(item) {
 
 // #region update-api-key
 async function updatePrivilegesAndReferrers(item) {
-  const referrers = prompt("Websites allowed to use the key, comma separated (empty: any)", "https://*.example.com");
+  const referrers = prompt(
+    "Websites allowed to use the key, comma separated (empty: any)",
+    "https://*.example.com,https://yourdomain.com",
+  );
   if (referrers === null) return;
-  // Privileges and referrers belong to the credential, not to the item: updateItem can't change them.
-  // Each list replaces the previous one, so send it whole.
+  // Credential fields, not item fields. Lists replace: send them whole
   await updateApiKey({
-    itemId: item.id,
+    itemId: item.id, // Required
     privileges,
     httpReferrers: referrers.split(",").map((r) => r.trim()).filter(Boolean),
     authentication: session,
@@ -250,11 +274,14 @@ async function updatePrivilegesAndReferrers(item) {
 // #region rotate-api-key
 async function rotateApiKey(item) {
   // Which slot holds the key in use? The new key goes in the other one.
-  const { apiToken1Active, apiToken2Active } = await getApiKey({ itemId: item.id, authentication: session });
+  const { apiToken1Active, apiToken2Active } = await getApiKey({
+    itemId: item.id, // Required
+    authentication: session,
+  });
   const [newSlot, oldSlot] = apiToken1Active ? [2, 1] : [1, 2];
   // 1. Generate the new key: the old one keeps working meanwhile
   const updated = await updateApiKey({
-    itemId: item.id,
+    itemId: item.id, // Required
     [`generateToken${newSlot}`]: true,
     [`apiToken${newSlot}ExpirationDate`]: in30Days(),
     authentication: session,
@@ -264,7 +291,11 @@ async function rotateApiKey(item) {
   // 3. Revoke the old key. It stops working in about a second.
   const oldKeyActive = oldSlot === 1 ? apiToken1Active : apiToken2Active;
   if (oldKeyActive && confirm(`Revoke the old key in slot ${oldSlot}?`)) {
-    await invalidateApiKey({ itemId: item.id, apiKey: oldSlot, authentication: session });
+    await invalidateApiKey({
+      itemId: item.id, // Required
+      apiKey: oldSlot,
+      authentication: session,
+    });
   }
 }
 // #endregion rotate-api-key
@@ -272,33 +303,38 @@ async function rotateApiKey(item) {
 // #region clean-up
 async function deleteItem(item) {
   if (!confirm(`Delete API key "${item.title}"? Apps using it stop working.`)) return;
-  await removeItem({ id: item.id, authentication: session });
+  await removeItem({
+    id: item.id, // Required
+    authentication: session,
+  });
   items = items.filter((i) => i.id !== item.id);
   renderItems();
 }
 
 async function deleteProject(project) {
   if (!confirm(`Delete project "${project.title}"? Its API keys stay in your content.`)) return;
-  await removeGroup({ id: project.id, authentication: session });
+  await removeGroup({
+    id: project.id, // Required
+    authentication: session,
+  });
   projects = projects.filter((p) => p.id !== project.id);
-  // Back to "All API keys"
   selectProject(ALL.id);
   renderProjects();
 }
 // #endregion clean-up
 
-// --- UI plumbing: not part of the steps ---
+// --- UI plumbing: not part of the tutorial steps ---
 
 // The project selected in the Projects column
-let selected;
+let selectedProject;
 
 function selectProject(id) {
-  selected = id === ALL.id ? ALL : projects.find((p) => p.id === id);
-  $("#new-item").disabled = !selected;
-  $("#items-panel").description = selected ? selected.title : "Select a project";
+  selectedProject = id === ALL.id ? ALL : projects.find((p) => p.id === id);
+  $("#new-item").disabled = !selectedProject;
+  $("#items-panel").description = selectedProject ? selectedProject.title : "Select a project";
   items = [];
   renderItems();
-  if (selected) loadItems(selected);
+  if (selectedProject) loadItems(selectedProject);
 }
 
 $("#projects").addEventListener("calciteListChange", (event) => {
@@ -315,7 +351,6 @@ addEventListener("unhandledrejection", (event) => {
   $("#status").textContent = `Error: ${event.reason?.message ?? event.reason}`;
 });
 
-// The organization's URL, set from getSelf() at sign-in
 let portalHome;
 
 // Opens the group or item page in the organization, to check the changes there
@@ -330,7 +365,7 @@ function render(list, records, describe, actions) {
 
 function listItem(record, description, actions) {
   const element = document.createElement("calcite-list-item");
-  Object.assign(element, { label: record.title, description, value: record.id, selected: record.id === selected?.id });
+  Object.assign(element, { label: record.title, description, value: record.id, selected: record.id === selectedProject?.id });
   for (const [icon, text, onClick] of actions) {
     const action = Object.assign(document.createElement("calcite-action"), { icon, text, slot: "actions-end" });
     action.addEventListener("click", (event) => {
