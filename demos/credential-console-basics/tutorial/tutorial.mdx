@@ -32,11 +32,13 @@ With a handful of keys this is doable. With dozens, the provider needs answers t
 You can already manage all of this through different ArcGIS tools and interfaces:
 
 1. **Portal > My content** lists and filters credentials, and lets you create them.
-1. **ArcGIS Location Platform** also provides a search experience and additional credential info, like usage reports.
-1. The **item page overview** of a credential shows the privileges the API key has, and lets you share it with groups and change its tags.
-1. The **item page settings** of a credential manage it: edit privileges, item access and referrers, and manage its two API keys (shown partially).
-1. **Portal > Groups** lists and searches your groups, and lets you create new ones.
-1. The **group page** shows the items shared with a group and its members, and lets you edit its details.
+1. **ArcGIS Location Platform** adds an enhanced search experience and more credential info, like usage reports.
+1. The **item page overview** of a credential lets you edit its metadata and tags, shows the privileges of the API key, and lets you share it with groups.
+1. The **item page settings** of a credential let you:
+    1. Edit its privileges: ArcGIS services and item access.
+    1. Manage its two API keys (shown partially) and its referrers.
+1. **Portal > Groups** lists, searches and filters your groups, and lets you create new ones.
+1. The **group page** lets you edit the group's details and shows the items shared with it.
 
 But every organization works in its own way (by customer, by team, by contract), and no general-purpose UI can fit every workflow perfectly. Because everything is available through the ArcGIS REST APIs, you can build a UI that fits yours.
 
@@ -46,12 +48,28 @@ But every organization works in its own way (by customer, by team, by contract),
 
 ## The end goal
 
-This is the dashboard GeoDataProvider is looking for to help them organize credentials by customer, audit them and rotate API keys.
+This is the dashboard GeoDataProvider is looking for: one place to organize credentials by customer, audit them and rotate API keys, with **fewer pages and far fewer clicks**.
 
 It is built only with ArcGIS REST JS in the browser. Try it: it runs here with fictional data.
 
 - Projects on the left are ArcGIS **groups**.
 - Each credential is an ArcGIS **item**, shared with its project and carefully tagged.
+
+<details>
+<summary>What does it add to what ArcGIS gives you today?</summary>
+
+- **Situation overview**: API keys, OAuth apps, tokens expiring soon and critical issues.
+- **Advanced search**: by customer name, tag, client ID, partial key…
+- **Needs triage**: credentials not assigned to any project yet.
+- **Tags grouped by family** in the UI.
+- **Items assigned to each key** grouped by tier.
+- **Customizable audit warnings**.
+- **Bulk actions**: add items to groups (projects), tag, revoke API keys, delete.
+- **Custom properties** per credential: owner, contact, deployment...
+
+And anything else the ArcGIS REST APIs let you do.
+
+</details>
 
 Find the [source code on GitHub](https://github.com/hhkaos/arcgis-credential-console).
 
@@ -61,7 +79,7 @@ Find the [source code on GitHub](https://github.com/hhkaos/arcgis-credential-con
 
 ## The MVP
 
-In this demo we will build a minimal, barebones UI using ArcGIS REST JS to:
+In this demo we will build a **minimal**, **barebones UI** using ArcGIS REST JS to:
 
 - Add OAuth sign-in
 - Search groups and credentials
@@ -447,8 +465,11 @@ The full app adds audits, usage and more on top of the same calls.
 
 <Outro>
 
-Feel free to use [this repo issues](https://github.com/EsriDevEvents/working-with-arcgis-rest-js-dtseu-2026/issues) anytime for questions about this demo/tutorial.
+Questions?
 
-For general questions: [ArcGIS REST JS forum at Esri Community](https://community.esri.com/en/categories/arcgis-rest-js).
+- About this demo/tutorial: use [the issues on this repo](https://github.com/EsriDevEvents/working-with-arcgis-rest-js-dtseu-2026/issues).
+- For general questions about ArcGIS REST JS: use [its forum at Esri Community](https://community.esri.com/en/categories/arcgis-rest-js).
+
+Check the [source code of the full reference app on GitHub](https://github.com/hhkaos/arcgis-credential-console).
 
 </Outro> 
